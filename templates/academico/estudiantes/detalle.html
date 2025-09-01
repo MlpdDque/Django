@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ estudiante.get_nombre_completo }} - Estudiantes{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado del estudiante -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'academico:inicio' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'academico:estudiantes_lista' %}">Estudiantes</a></li>
+                    <li class="breadcrumb-item active">{{ estudiante.numero_identificacion }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-5 fw-bold text-info mb-3">{{ estudiante.get_nombre_completo }}</h1>
+            <p class="lead text-muted">ID: {{ estudiante.numero_identificacion }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="/admin/academico/estudiante/{{ estudiante.pk }}/change/" class="btn btn-outline-info" target="_blank">
+                <i class="bi bi-pencil me-2"></i>Editar Estudiante
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información personal del estudiante -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Información Personal</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Nombres:</strong></td>
+                            <td>{{ estudiante.nombres }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Apellidos:</strong></td>
+                            <td>{{ estudiante.apellidos }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Identificación:</strong></td>
+                            <td><code>{{ estudiante.numero_identificacion }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>{{ estudiante.email }}</td>
+                        </tr>
+                        {% if estudiante.telefono %}
+                            <tr>
+                                <td><strong>Teléfono:</strong></td>
+                                <td>{{ estudiante.telefono }}</td>
+                            </tr>
+                        {% endif %}
+                        <tr>
+                            <td><strong>Fecha Nac.:</strong></td>
+                            <td>{{ estudiante.fecha_nacimiento|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fecha Ingreso:</strong></td>
+                            <td>{{ estudiante.fecha_ingreso|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estado:</strong></td>
+                            <td>
+                                {% if estudiante.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Información académica -->
+            <div class="card mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-mortarboard me-2"></i>Información Académica</h5>
+                </div>
+                <div class="card-body">
+                    {% if estudiante.programa_principal %}
+                        <div class="mb-3">
+                            <small class="text-muted">Programa Principal:</small><br>
+                            <a href="{{ estudiante.programa_principal.get_absolute_url }}" class="text-decoration-none">
+                                <strong>{{ estudiante.programa_principal.nombre }}</strong>
+                            </a>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ total_inscripciones }}</h4>
+                            <small class="text-muted">Cursos</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ cursos_aprobados }}</h4>
+                            <small class="text-muted">Aprobados</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-danger">{{ cursos_reprobados }}</h4>
+                            <small class="text-muted">Reprobados</small>
+                        </div>
+                    </div>
+                    
+                    {% if promedio_general %}
+                        <div class="text-center mt-3 pt-3 border-top">
+                            <h4 class="text-warning">{{ promedio_general|floatformat:2 }}</h4>
+                            <small class="text-muted">Promedio General</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial académico -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-journal-bookmark me-2"></i>Historial Académico ({{ total_inscripciones }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if inscripciones %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Curso</th>
+                                        <th>Programa</th>
+                                        <th>Semestre</th>
+                                        <th>Créditos</th>
+                                        <th>Nota</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inscripcion in inscripciones %}
+                                        <tr>
+                                            <td><code>{{ inscripcion.curso.codigo }}</code></td>
+                                            <td>
+                                                <a href="{{ inscripcion.curso.get_absolute_url }}" class="text-decoration-none">
+                                                    {{ inscripcion.curso.nombre }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">{{ inscripcion.curso.programa.codigo }}</small>
+                                            </td>
+                                            <td>{{ inscripcion.semestre_cursado }}</td>
+                                            <td>{{ inscripcion.curso.creditos }}</td>
+                                            <td>
+                                                {% if inscripcion.nota_final %}
+                                                    <span class="fw-bold 
+                                                        {% if inscripcion.nota_final >= 3.0 %}text-success
+                                                        {% else %}text-danger{% endif %}">
+                                                        {{ inscripcion.nota_final }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if inscripcion.aprobado %}
+                                                    <span class="badge bg-success">Aprobado</span>
+                                                {% elif inscripcion.nota_final %}
+                                                    <span class="badge bg-danger">Reprobado</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">En curso</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ inscripcion.get_absolute_url }}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-journal-bookmark display-4 text-muted"></i>
+                            <p class="text-muted mt-2">Este estudiante aún no tiene inscripciones</p>
+                            <a href="/admin/academico/inscripcion/add/" class="btn btn-warning" target="_blank">
+                                <i class="bi bi-plus-circle me-2"></i>Inscribir en Curso
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

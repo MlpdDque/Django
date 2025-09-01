@@ -1,0 +1,62 @@
+# Archivos específicos de Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Archivos de entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos del sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos de configuración local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de cobertura de pruebas
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Archivos de traducción
+*.mo
+
+# Archivos estáticos recolectados
+/static/
+/staticfiles/
+
+# Archivos de medios
+/media/
+
+# Archivos de respaldo
+*.bak

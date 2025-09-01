@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ curso.nombre }} - Cursos{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado del curso -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'academico:inicio' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'academico:cursos_lista' %}">Cursos</a></li>
+                    <li class="breadcrumb-item active">{{ curso.codigo }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-5 fw-bold text-success mb-3">{{ curso.nombre }}</h1>
+            <p class="lead text-muted">Código: {{ curso.codigo }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="/admin/academico/curso/{{ curso.pk }}/change/" class="btn btn-outline-success" target="_blank">
+                <i class="bi bi-pencil me-2"></i>Editar Curso
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información del curso -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información del Curso</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Código:</strong></td>
+                            <td><code>{{ curso.codigo }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Programa:</strong></td>
+                            <td>
+                                <a href="{{ curso.programa.get_absolute_url }}" class="text-decoration-none">
+                                    {{ curso.programa.nombre }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Semestre:</strong></td>
+                            <td>{{ curso.semestre }}°</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Créditos:</strong></td>
+                            <td>{{ curso.creditos }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estudiantes:</strong></td>
+                            <td>{{ total_inscripciones }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Aprobados:</strong></td>
+                            <td>{{ aprobados }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reprobados:</strong></td>
+                            <td>{{ reprobados }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estado:</strong></td>
+                            <td>
+                                {% if curso.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            {% if curso.descripcion %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Descripción</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ curso.descripcion }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Estudiantes inscritos -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Estudiantes Inscritos ({{ total_inscripciones }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if inscripciones %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Identificación</th>
+                                        <th>Estudiante</th>
+                                        <th>Semestre</th>
+                                        <th>Nota Final</th>
+                                        <th>Estado</th>
+                                        <th>Inscripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inscripcion in inscripciones %}
+                                        <tr>
+                                            <td><code>{{ inscripcion.estudiante.numero_identificacion }}</code></td>
+                                            <td>
+                                                <a href="{{ inscripcion.estudiante.get_absolute_url }}" class="text-decoration-none">
+                                                    {{ inscripcion.estudiante.get_nombre_completo }}
+                                                </a>
+                                            </td>
+                                            <td>{{ inscripcion.semestre_cursado }}</td>
+                                            <td>
+                                                {% if inscripcion.nota_final %}
+                                                    <span class="fw-bold 
+                                                        {% if inscripcion.nota_final >= 3.0 %}text-success
+                                                        {% else %}text-danger{% endif %}">
+                                                        {{ inscripcion.nota_final }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">Sin calificar</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if inscripcion.aprobado %}
+                                                    <span class="badge bg-success">Aprobado</span>
+                                                {% elif inscripcion.nota_final %}
+                                                    <span class="badge bg-danger">Reprobado</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">En curso</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ inscripcion.fecha_inscripcion|date:"d/m/Y" }}</td>
+                                            <td>
+                                                <a href="{{ inscripcion.get_absolute_url }}" class="btn btn-sm btn-outline-info">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Estadísticas resumidas -->
+                        <div class="row mt-4">
+                            <div class="col-md-4 text-center">
+                                <h4 class="text-primary">{{ total_inscripciones }}</h4>
+                                <small class="text-muted">Total Inscritos</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h4 class="text-success">{{ aprobados }}</h4>
+                                <small class="text-muted">Aprobados</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h4 class="text-danger">{{ reprobados }}</h4>
+                                <small class="text-muted">Reprobados</small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people display-4 text-muted"></i>
+                            <p class="text-muted mt-2">Este curso aún no tiene estudiantes inscritos</p>
+                            <a href="/admin/academico/inscripcion/add/" class="btn btn-info" target="_blank">
+                                <i class="bi bi-plus-circle me-2"></i>Inscribir Estudiante
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Programas Académicos - Sistema Académico{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado de la página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="bi bi-collection me-3"></i>Programas Académicos
+            </h1>
+            <p class="lead text-muted">Total de programas: {{ total_programas }}</p>
+        </div>
+        <a href="/admin/academico/programa/add/" class="btn btn-primary btn-lg" target="_blank">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Programa
+        </a>
+    </div>
+
+    <!-- Formulario de búsqueda -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" 
+                           class="form-control" 
+                           name="buscar" 
+                           value="{{ busqueda }}" 
+                           placeholder="Buscar por nombre, código o descripción...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de programas -->
+    {% if programas %}
+        <div class="row">
+            {% for programa in programas %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">{{ programa.codigo }}</h5>
+                                <span class="badge bg-light text-dark">{{ programa.duracion_semestres }} sem.</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3 text-primary">{{ programa.nombre }}</h6>
+                            {% if programa.descripcion %}
+                                <p class="card-text text-muted">
+                                    {{ programa.descripcion|truncatewords:20 }}
+                                </p>
+                            {% endif %}
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-success mb-0">{{ programa.total_cursos }}</h4>
+                                        <small class="text-muted">Cursos</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-info mb-0">{{ programa.estudiantes.count }}</h4>
+                                    <small class="text-muted">Estudiantes</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ programa.get_absolute_url }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-eye me-2"></i>Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+            <nav aria-label="Paginación de programas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if busqueda %}&buscar={{ busqueda }}{% endif %}">Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}">Anterior</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Mensaje cuando no hay programas -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">
+                <i class="bi bi-collection"></i>
+            </div>
+            <h3 class="text-muted">No se encontraron programas</h3>
+            {% if busqueda %}
+                <p class="text-muted">No hay resultados para "{{ busqueda }}"</p>
+                <a href="{% url 'academico:programas_lista' %}" class="btn btn-outline-secondary">Limpiar búsqueda</a>
+            {% else %}
+                <p class="text-muted">Aún no hay programas registrados en el sistema</p>
+                <a href="/admin/academico/programa/add/" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Primer Programa
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

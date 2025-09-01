@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Inscripciones - Sistema Académico{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado de la página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-warning">
+                <i class="bi bi-journal-bookmark me-3"></i>Inscripciones
+            </h1>
+            <p class="lead text-muted">Total de inscripciones: {{ total_inscripciones }}</p>
+        </div>
+        <a href="/admin/academico/inscripcion/add/" class="btn btn-warning btn-lg" target="_blank">
+            <i class="bi bi-plus-circle me-2"></i>Nueva Inscripción
+        </a>
+    </div>
+
+    <!-- Formularios de búsqueda y filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" 
+                           class="form-control" 
+                           name="buscar" 
+                           value="{{ busqueda }}" 
+                           placeholder="Buscar estudiante o curso...">
+                </div>
+                <div class="col-md-3">
+                    <select name="programa" class="form-select">
+                        <option value="">Todos los programas</option>
+                        {% for programa in programas %}
+                            <option value="{{ programa.pk }}" {% if programa.pk|stringformat:"s" == programa_seleccionado %}selected{% endif %}>
+                                {{ programa.codigo }} - {{ programa.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="semestre" class="form-select">
+                        <option value="">Todos los semestres</option>
+                        {% for semestre in semestres %}
+                            <option value="{{ semestre }}" {% if semestre == semestre_seleccionado %}selected{% endif %}>
+                                {{ semestre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-warning w-100">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de inscripciones -->
+    {% if inscripciones %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-warning">
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Curso</th>
+                                <th>Programa</th>
+                                <th>Semestre</th>
+                                <th>Créditos</th>
+                                <th>Nota Final</th>
+                                <th>Estado</th>
+                                <th>Fecha Inscripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inscripcion in inscripciones %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <a href="{{ inscripcion.estudiante.get_absolute_url }}" class="text-decoration-none fw-bold">
+                                                {{ inscripcion.estudiante.get_nombre_completo }}
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">{{ inscripcion.estudiante.numero_identificacion }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <a href="{{ inscripcion.curso.get_absolute_url }}" class="text-decoration-none fw-bold">
+                                                {{ inscripcion.curso.nombre }}
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">{{ inscripcion.curso.codigo }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ inscripcion.curso.programa.get_absolute_url }}" class="text-decoration-none">
+                                            {{ inscripcion.curso.programa.codigo }}
+                                        </a>
+                                    </td>
+                                    <td>{{ inscripcion.semestre_cursado }}</td>
+                                    <td>{{ inscripcion.curso.creditos }}</td>
+                                    <td>
+                                        {% if inscripcion.nota_final %}
+                                            <span class="fw-bold 
+                                                {% if inscripcion.nota_final >= 3.0 %}text-success
+                                                {% else %}text-danger{% endif %}">
+                                                {{ inscripcion.nota_final }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Sin calificar</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if inscripcion.aprobado %}
+                                            <span class="badge bg-success">Aprobado</span>
+                                        {% elif inscripcion.nota_final %}
+                                            <span class="badge bg-danger">Reprobado</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">En curso</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ inscripcion.fecha_inscripcion|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <a href="{{ inscripcion.get_absolute_url }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+            <nav aria-label="Paginación de inscripciones" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}{% if semestre_seleccionado %}&semestre={{ semestre_seleccionado }}{% endif %}">Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}{% if semestre_seleccionado %}&semestre={{ semestre_seleccionado }}{% endif %}">Anterior</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}{% if semestre_seleccionado %}&semestre={{ semestre_seleccionado }}{% endif %}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}{% if semestre_seleccionado %}&semestre={{ semestre_seleccionado }}{% endif %}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Mensaje cuando no hay inscripciones -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">
+                <i class="bi bi-journal-bookmark"></i>
+            </div>
+            <h3 class="text-muted">No se encontraron inscripciones</h3>
+            {% if busqueda or programa_seleccionado or semestre_seleccionado %}
+                <p class="text-muted">No hay resultados con los filtros aplicados</p>
+                <a href="{% url 'academico:inscripciones_lista' %}" class="btn btn-outline-secondary">Limpiar filtros</a>
+            {% else %}
+                <p class="text-muted">Aún no hay inscripciones registradas en el sistema</p>
+                <a href="/admin/academico/inscripcion/add/" class="btn btn-warning" target="_blank">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Primera Inscripción
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

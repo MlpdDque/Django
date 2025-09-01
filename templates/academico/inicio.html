@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Sistema Académico{% endblock %}
+
+{% block content %}
+<!-- Sección Hero -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">Sistema Académico Universitario</h1>
+                <p class="lead mb-4">
+                    Plataforma integral para la gestión de programas académicos, cursos, estudiantes e inscripciones.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'academico:programas_lista' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-collection me-2"></i>Ver Programas
+                    </a>
+                    <a href="{% url 'academico:estudiantes_lista' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-people me-2"></i>Ver Estudiantes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas principales -->
+<div class="container my-5">
+    <h2 class="text-center mb-5">Estadísticas del Sistema</h2>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="bi bi-collection"></i>
+                    </div>
+                    <h3 class="display-6 fw-bold text-primary">{{ total_programas }}</h3>
+                    <p class="card-text text-muted">Programas Académicos</p>
+                    <a href="{% url 'academico:programas_lista' %}" class="btn btn-outline-primary">Ver Programas</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-3">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h3 class="display-6 fw-bold text-success">{{ total_cursos }}</h3>
+                    <p class="card-text text-muted">Cursos Disponibles</p>
+                    <a href="{% url 'academico:cursos_lista' %}" class="btn btn-outline-success">Ver Cursos</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-info mb-3">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="display-6 fw-bold text-info">{{ total_estudiantes }}</h3>
+                    <p class="card-text text-muted">Estudiantes Activos</p>
+                    <a href="{% url 'academico:estudiantes_lista' %}" class="btn btn-outline-info">Ver Estudiantes</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-warning mb-3">
+                        <i class="bi bi-journal-bookmark"></i>
+                    </div>
+                    <h3 class="display-6 fw-bold text-warning">{{ total_inscripciones }}</h3>
+                    <p class="card-text text-muted">Inscripciones Totales</p>
+                    <a href="{% url 'academico:inscripciones_lista' %}" class="btn btn-outline-warning">Ver Inscripciones</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información reciente -->
+<div class="container my-5">
+    <div class="row">
+        <!-- Programas recientes -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-collection me-2"></i>Programas Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if programas_recientes %}
+                        <div class="list-group list-group-flush">
+                            {% for programa in programas_recientes %}
+                                <a href="{{ programa.get_absolute_url }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ programa.nombre }}</h6>
+                                        <small>{{ programa.codigo }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ programa.duracion_semestres }} semestres</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay programas registrados</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Estudiantes recientes -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Estudiantes Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if estudiantes_recientes %}
+                        <div class="list-group list-group-flush">
+                            {% for estudiante in estudiantes_recientes %}
+                                <a href="{{ estudiante.get_absolute_url }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ estudiante.get_nombre_completo }}</h6>
+                                        <small>{{ estudiante.numero_identificacion }}</small>
+                                    </div>
+                                    {% if estudiante.programa_principal %}
+                                        <small class="text-muted">{{ estudiante.programa_principal.nombre }}</small>
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay estudiantes registrados</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inscripciones recientes -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-journal-bookmark me-2"></i>Inscripciones Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if inscripciones_recientes %}
+                        <div class="list-group list-group-flush">
+                            {% for inscripcion in inscripciones_recientes %}
+                                <a href="{{ inscripcion.get_absolute_url }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ inscripcion.curso.nombre }}</h6>
+                                        <small>{{ inscripcion.fecha_inscripcion|date:"d/m/Y" }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ inscripcion.estudiante.get_nombre_completo }}</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay inscripciones registradas</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

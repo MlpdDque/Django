@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Cursos - Sistema Académico{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado de la página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-success">
+                <i class="bi bi-book me-3"></i>Cursos Académicos
+            </h1>
+            <p class="lead text-muted">Total de cursos: {{ total_cursos }}</p>
+        </div>
+        <a href="/admin/academico/curso/add/" class="btn btn-success btn-lg" target="_blank">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Curso
+        </a>
+    </div>
+
+    <!-- Formularios de búsqueda y filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" 
+                           class="form-control" 
+                           name="buscar" 
+                           value="{{ busqueda }}" 
+                           placeholder="Buscar por nombre o código...">
+                </div>
+                <div class="col-md-4">
+                    <select name="programa" class="form-select">
+                        <option value="">Todos los programas</option>
+                        {% for programa in programas %}
+                            <option value="{{ programa.pk }}" {% if programa.pk|stringformat:"s" == programa_seleccionado %}selected{% endif %}>
+                                {{ programa.codigo }} - {{ programa.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-success w-100">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de cursos -->
+    {% if cursos %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre del Curso</th>
+                                <th>Programa</th>
+                                <th>Semestre</th>
+                                <th>Créditos</th>
+                                <th>Estudiantes</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for curso in cursos %}
+                                <tr>
+                                    <td><code class="text-primary">{{ curso.codigo }}</code></td>
+                                    <td>
+                                        <strong>{{ curso.nombre }}</strong>
+                                        {% if curso.descripcion %}
+                                            <br><small class="text-muted">{{ curso.descripcion|truncatewords:10 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ curso.programa.get_absolute_url }}" class="text-decoration-none">
+                                            {{ curso.programa.codigo }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ curso.semestre }}° Sem.</span>
+                                    </td>
+                                    <td>{{ curso.creditos }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ curso.total_estudiantes }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ curso.get_absolute_url }}" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+            <nav aria-label="Paginación de cursos" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Anterior</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Mensaje cuando no hay cursos -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">
+                <i class="bi bi-book"></i>
+            </div>
+            <h3 class="text-muted">No se encontraron cursos</h3>
+            {% if busqueda or programa_seleccionado %}
+                <p class="text-muted">No hay resultados con los filtros aplicados</p>
+                <a href="{% url 'academico:cursos_lista' %}" class="btn btn-outline-secondary">Limpiar filtros</a>
+            {% else %}
+                <p class="text-muted">Aún no hay cursos registrados en el sistema</p>
+                <a href="/admin/academico/curso/add/" class="btn btn-success" target="_blank">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Primer Curso
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

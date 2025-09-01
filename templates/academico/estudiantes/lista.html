@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Estudiantes - Sistema Académico{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado de la página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-info">
+                <i class="bi bi-people me-3"></i>Estudiantes
+            </h1>
+            <p class="lead text-muted">Total de estudiantes: {{ total_estudiantes }}</p>
+        </div>
+        <a href="/admin/academico/estudiante/add/" class="btn btn-info btn-lg" target="_blank">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Estudiante
+        </a>
+    </div>
+
+    <!-- Formularios de búsqueda y filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" 
+                           class="form-control" 
+                           name="buscar" 
+                           value="{{ busqueda }}" 
+                           placeholder="Buscar por nombre, identificación o email...">
+                </div>
+                <div class="col-md-4">
+                    <select name="programa" class="form-select">
+                        <option value="">Todos los programas</option>
+                        {% for programa in programas %}
+                            <option value="{{ programa.pk }}" {% if programa.pk|stringformat:"s" == programa_seleccionado %}selected{% endif %}>
+                                {{ programa.codigo }} - {{ programa.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-info w-100">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de estudiantes -->
+    {% if estudiantes %}
+        <div class="row">
+            {% for estudiante in estudiantes %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-circle me-2 fs-4"></i>
+                                <div>
+                                    <h6 class="mb-0">{{ estudiante.numero_identificacion }}</h6>
+                                    <small>{{ estudiante.fecha_ingreso|date:"d/m/Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ estudiante.get_nombre_completo }}</h5>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Email:</small><br>
+                                <span>{{ estudiante.email }}</span>
+                            </div>
+                            
+                            {% if estudiante.programa_principal %}
+                                <div class="mb-3">
+                                    <small class="text-muted">Programa:</small><br>
+                                    <a href="{{ estudiante.programa_principal.get_absolute_url }}" class="text-decoration-none">
+                                        {{ estudiante.programa_principal.nombre }}
+                                    </a>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-warning mb-0">{{ estudiante.total_cursos }}</h4>
+                                        <small class="text-muted">Cursos</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success mb-0">
+                                        {% if estudiante.activo %}
+                                            <i class="bi bi-check-circle"></i>
+                                        {% else %}
+                                            <i class="bi bi-x-circle text-danger"></i>
+                                        {% endif %}
+                                    </h4>
+                                    <small class="text-muted">Estado</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ estudiante.get_absolute_url }}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-eye me-2"></i>Ver Perfil Académico
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+            <nav aria-label="Paginación de estudiantes">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Anterior</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if programa_seleccionado %}&programa={{ programa_seleccionado }}{% endif %}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Mensaje cuando no hay estudiantes -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3 class="text-muted">No se encontraron estudiantes</h3>
+            {% if busqueda or programa_seleccionado %}
+                <p class="text-muted">No hay resultados con los filtros aplicados</p>
+                <a href="{% url 'academico:estudiantes_lista' %}" class="btn btn-outline-secondary">Limpiar filtros</a>
+            {% else %}
+                <p class="text-muted">Aún no hay estudiantes registrados en el sistema</p>
+                <a href="/admin/academico/estudiante/add/" class="btn btn-info" target="_blank">
+                    <i class="bi bi-plus-circle me-2"></i>Registrar Primer Estudiante
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

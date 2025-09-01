@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ programa.nombre }} - Programas{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Encabezado del programa -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'academico:inicio' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'academico:programas_lista' %}">Programas</a></li>
+                    <li class="breadcrumb-item active">{{ programa.codigo }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-5 fw-bold text-primary mb-3">{{ programa.nombre }}</h1>
+            <p class="lead text-muted">Código: {{ programa.codigo }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="/admin/academico/programa/{{ programa.pk }}/change/" class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-pencil me-2"></i>Editar Programa
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información del programa -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información General</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Código:</strong></td>
+                            <td>{{ programa.codigo }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Duración:</strong></td>
+                            <td>{{ programa.duracion_semestres }} semestres</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Cursos:</strong></td>
+                            <td>{{ total_cursos }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Estudiantes:</strong></td>
+                            <td>{{ total_estudiantes }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estado:</strong></td>
+                            <td>
+                                {% if programa.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Creado:</strong></td>
+                            <td>{{ programa.fecha_creacion|date:"d/m/Y" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            {% if programa.descripcion %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Descripción</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ programa.descripcion }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Cursos del programa -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-book me-2"></i>Cursos del Programa ({{ total_cursos }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if cursos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Semestre</th>
+                                        <th>Créditos</th>
+                                        <th>Estudiantes</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for curso in cursos %}
+                                        <tr>
+                                            <td><code>{{ curso.codigo }}</code></td>
+                                            <td>{{ curso.nombre }}</td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ curso.semestre }}°</span>
+                                            </td>
+                                            <td>{{ curso.creditos }}</td>
+                                            <td>{{ curso.get_total_estudiantes }}</td>
+                                            <td>
+                                                <a href="{{ curso.get_absolute_url }}" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center">
+                            <a href="{% url 'academico:cursos_lista' %}?programa={{ programa.pk }}" class="btn btn-outline-success">
+                                Ver Todos los Cursos del Programa
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-book display-4 text-muted"></i>
+                            <p class="text-muted mt-2">Este programa aún no tiene cursos registrados</p>
+                            <a href="/admin/academico/curso/add/" class="btn btn-success" target="_blank">
+                                <i class="bi bi-plus-circle me-2"></i>Agregar Primer Curso
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Estudiantes del programa -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Estudiantes del Programa ({{ total_estudiantes }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if estudiantes %}
+                        <div class="row">
+                            {% for estudiante in estudiantes %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="bi bi-person-circle text-info fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <a href="{{ estudiante.get_absolute_url }}" class="text-decoration-none">
+                                                <strong>{{ estudiante.get_nombre_completo }}</strong>
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">{{ estudiante.numero_identificacion }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if total_estudiantes > 10 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'academico:estudiantes_lista' %}?programa={{ programa.pk }}" class="btn btn-outline-info">
+                                    Ver Todos los Estudiantes ({{ total_estudiantes }})
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people display-4 text-muted"></i>
+                            <p class="text-muted mt-2">Este programa aún no tiene estudiantes inscritos</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
